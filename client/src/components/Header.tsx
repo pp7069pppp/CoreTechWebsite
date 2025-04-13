@@ -3,7 +3,7 @@ import { useTheme } from "./ui/theme-provider";
 import { Moon, Sun, Menu, X } from "lucide-react";
 
 const Header = () => {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -16,7 +16,7 @@ const Header = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const Header = () => {
               onClick={toggleTheme} 
               className="ml-4 flex items-center cursor-pointer border border-gray-200 dark:border-gray-700 rounded-full h-6 w-12 relative"
             >
-              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
+              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${resolvedTheme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
               <div className="absolute left-1">
                 <Sun className="h-3 w-3 text-white" />
               </div>
@@ -86,7 +86,7 @@ const Header = () => {
             className="flex items-center mt-4 cursor-pointer"
           >
             <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-full h-6 w-12 relative mr-3">
-              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
+              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${resolvedTheme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
               <div className="absolute left-1">
                 <Sun className="h-3 w-3 text-white" />
               </div>
