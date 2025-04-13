@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, ApiResponse } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,37 +97,41 @@ export default function AdminPage() {
   });
 
   // Fetch hero content
-  const { data: heroData, isLoading: heroLoading } = useQuery({
+  const { data: heroData, isLoading: heroLoading } = useQuery<ApiResponse<HeroFormValues>>({
     queryKey: ['/api/cms/content/hero'],
     enabled: isAuthenticated && activeTab === "hero",
-    refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      if (data?.success && data?.data) {
-        heroForm.reset({
-          heading: data.data.heading,
-          subheading: data.data.subheading,
-        });
-      }
-    }
+    refetchOnWindowFocus: false
   });
 
+  // Apply hero data when received
+  React.useEffect(() => {
+    if (heroData?.success && heroData?.data) {
+      heroForm.reset({
+        heading: heroData.data.heading,
+        subheading: heroData.data.subheading,
+      });
+    }
+  }, [heroData, heroForm]);
+
   // Fetch about content
-  const { data: aboutData, isLoading: aboutLoading } = useQuery({
+  const { data: aboutData, isLoading: aboutLoading } = useQuery<ApiResponse<AboutFormValues>>({
     queryKey: ['/api/cms/content/about'],
     enabled: isAuthenticated && activeTab === "about",
-    refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      if (data?.success && data?.data) {
-        aboutForm.reset({
-          title: data.data.title,
-          description1: data.data.description1,
-          description2: data.data.description2,
-          imageUrl: data.data.imageUrl,
-          stats: data.data.stats,
-        });
-      }
-    }
+    refetchOnWindowFocus: false
   });
+
+  // Apply about data when received
+  React.useEffect(() => {
+    if (aboutData?.success && aboutData?.data) {
+      aboutForm.reset({
+        title: aboutData.data.title,
+        description1: aboutData.data.description1,
+        description2: aboutData.data.description2,
+        imageUrl: aboutData.data.imageUrl,
+        stats: aboutData.data.stats,
+      });
+    }
+  }, [aboutData, aboutForm]);
 
   // Handle login submission
   const handleLogin = async (data: LoginFormValues) => {
