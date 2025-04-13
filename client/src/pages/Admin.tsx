@@ -1,52 +1,46 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-// Admin password validation (simple for demo)
+// Form Schemas
 const loginSchema = z.object({
-  password: z.string().min(4, "Password must be at least 4 characters"),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-// Schemas for different content types
 const heroSchema = z.object({
-  heading: z.string().min(5, "Heading must be at least 5 characters"),
-  subheading: z.string().min(10, "Subheading must be at least 10 characters"),
+  heading: z.string().min(5, { message: "Heading must be at least 5 characters" }),
+  subheading: z.string().min(10, { message: "Subheading must be at least 10 characters" }),
 });
 
 const aboutSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  description1: z.string().min(10, "Description must be at least 10 characters"),
-  description2: z.string().min(10, "Description must be at least 10 characters"),
+  title: z.string().min(5, { message: "Title must be at least 5 characters" }),
+  description1: z.string().min(20, { message: "Description must be at least 20 characters" }),
+  description2: z.string().min(20, { message: "Description must be at least 20 characters" }),
+  imageUrl: z.string().url({ message: "Please enter a valid URL" }),
   stats: z.array(
     z.object({
-      value: z.string().min(1, "Value is required"),
-      label: z.string().min(1, "Label is required"),
+      value: z.string(),
+      label: z.string(),
     })
-  ).min(1, "At least one stat is required")
+  ).min(1, { message: "At least one stat is required" }),
 });
 
 const portfolioItemSchema = z.object({
-  title: z.string().min(2, "Title must be at least 2 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  imageUrl: z.string().url("Please enter a valid URL"),
-  tags: z.array(z.string()).min(1, "At least one tag is required"),
-  projectUrl: z.string().url("Please enter a valid URL"),
+  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
+  description: z.string().min(20, { message: "Description must be at least 20 characters" }),
+  imageUrl: z.string().url({ message: "Please enter a valid URL" }),
+  tags: z.string().transform(value => value.split(",").map(tag => tag.trim())),
+  projectUrl: z.string().url({ message: "Please enter a valid URL" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -54,10 +48,11 @@ type HeroFormValues = z.infer<typeof heroSchema>;
 type AboutFormValues = z.infer<typeof aboutSchema>;
 type PortfolioItemFormValues = z.infer<typeof portfolioItemSchema>;
 
-const AdminPage = () => {
+export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("hero");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -71,8 +66,8 @@ const AdminPage = () => {
   const heroForm = useForm<HeroFormValues>({
     resolver: zodResolver(heroSchema),
     defaultValues: {
-      heading: "Innovative Solutions for Tomorrow's Challenges",
-      subheading: "CoreTech delivers cutting-edge technology solutions that transform how businesses operate in the digital landscape.",
+      heading: "",
+      subheading: "",
     },
   });
 
@@ -80,436 +75,559 @@ const AdminPage = () => {
   const aboutForm = useForm<AboutFormValues>({
     resolver: zodResolver(aboutSchema),
     defaultValues: {
-      title: "About CoreTech",
-      description1: "Founded in 2010, CoreTech has been at the forefront of technology innovation, helping businesses navigate the complex digital landscape.",
-      description2: "Our mission is to empower organizations through technology, providing solutions that drive efficiency, growth, and competitive advantage.",
-      stats: [
-        { value: "200+", label: "Projects Completed" },
-        { value: "98%", label: "Client Satisfaction" },
-        { value: "50+", label: "Expert Team Members" },
-        { value: "12+", label: "Years of Excellence" },
-      ],
+      title: "",
+      description1: "",
+      description2: "",
+      imageUrl: "",
+      stats: [{ value: "", label: "" }],
     },
   });
 
-  // Portfolio item form (for adding new portfolio items)
+  // Portfolio item form
   const portfolioForm = useForm<PortfolioItemFormValues>({
     resolver: zodResolver(portfolioItemSchema),
     defaultValues: {
       title: "",
       description: "",
       imageUrl: "",
-      tags: [],
+      tags: "",
       projectUrl: "",
     },
   });
 
+  // Fetch hero content
+  const { data: heroData, isLoading: heroLoading } = useQuery({
+    queryKey: ['/api/cms/content/hero'],
+    enabled: isAuthenticated && activeTab === "hero",
+    refetchOnWindowFocus: false,
+    onSuccess: (data) => {
+      if (data?.success && data?.data) {
+        heroForm.reset({
+          heading: data.data.heading,
+          subheading: data.data.subheading,
+        });
+      }
+    }
+  });
+
+  // Fetch about content
+  const { data: aboutData, isLoading: aboutLoading } = useQuery({
+    queryKey: ['/api/cms/content/about'],
+    enabled: isAuthenticated && activeTab === "about",
+    refetchOnWindowFocus: false,
+    onSuccess: (data) => {
+      if (data?.success && data?.data) {
+        aboutForm.reset({
+          title: data.data.title,
+          description1: data.data.description1,
+          description2: data.data.description2,
+          imageUrl: data.data.imageUrl,
+          stats: data.data.stats,
+        });
+      }
+    }
+  });
+
+  // Handle login submission
   const handleLogin = async (data: LoginFormValues) => {
-    setIsSubmitting(true);
     try {
-      // Simple password check - in a real app, this would call the backend
-      if (data.password === "admin123") {
+      const response = await apiRequest('/api/cms/login', {
+        method: 'POST',
+        body: JSON.stringify({ password: data.password }),
+      });
+
+      if (response.success) {
         setIsAuthenticated(true);
         toast({
-          title: "Login Successful",
+          title: "Login successful",
           description: "Welcome to the admin panel",
         });
       } else {
         toast({
-          title: "Login Failed",
-          description: "Incorrect password",
+          title: "Login failed",
+          description: response.message || "Invalid credentials",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Login Error",
-        description: "An error occurred during login",
+        title: "Error",
+        description: "Failed to login. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  // Update hero section
   const updateHeroSection = async (data: HeroFormValues) => {
-    setIsSubmitting(true);
     try {
-      // In a real app, this would call an API endpoint
-      console.log("Updating hero section:", data);
-      toast({
-        title: "Success",
-        description: "Hero section updated successfully",
+      const response = await apiRequest('/api/cms/content/hero', {
+        method: 'POST',
+        body: JSON.stringify(data),
       });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Hero section updated successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/hero'] });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to update hero section",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update hero section",
+        description: "Failed to update hero section. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  // Update about section
   const updateAboutSection = async (data: AboutFormValues) => {
-    setIsSubmitting(true);
     try {
-      // In a real app, this would call an API endpoint
-      console.log("Updating about section:", data);
-      toast({
-        title: "Success",
-        description: "About section updated successfully",
+      const response = await apiRequest('/api/cms/content/about', {
+        method: 'POST',
+        body: JSON.stringify(data),
       });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "About section updated successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/about'] });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to update about section",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update about section",
+        description: "Failed to update about section. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  // Add portfolio item
   const addPortfolioItem = async (data: PortfolioItemFormValues) => {
-    setIsSubmitting(true);
     try {
-      // In a real app, this would call an API endpoint
-      console.log("Adding portfolio item:", data);
-      toast({
-        title: "Success",
-        description: "Portfolio item added successfully",
+      // First get existing portfolio items
+      const portfolioResponse = await apiRequest('/api/cms/content/portfolio', {
+        method: 'GET',
       });
-      portfolioForm.reset();
+      
+      let portfolioItems = [];
+      if (portfolioResponse.success && portfolioResponse.data) {
+        portfolioItems = portfolioResponse.data;
+      }
+      
+      // Add new item with incremental ID
+      const newItem = {
+        id: portfolioItems.length > 0 ? Math.max(...portfolioItems.map(item => item.id)) + 1 : 1,
+        ...data,
+      };
+      
+      const allItems = [...portfolioItems, newItem];
+      
+      // Update portfolio items
+      const response = await apiRequest('/api/cms/content/portfolio', {
+        method: 'POST',
+        body: JSON.stringify(allItems),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Portfolio item added successfully",
+        });
+        portfolioForm.reset();
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/portfolio'] });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to add portfolio item",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add portfolio item",
+        description: "Failed to add portfolio item. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
+  // Add more stats fields to about form
+  const addStatField = () => {
+    const currentStats = aboutForm.getValues("stats") || [];
+    aboutForm.setValue("stats", [...currentStats, { value: "", label: "" }]);
+  };
+
+  // Remove stat field from about form
+  const removeStatField = (index: number) => {
+    const currentStats = aboutForm.getValues("stats") || [];
+    if (currentStats.length > 1) {
+      aboutForm.setValue(
+        "stats",
+        currentStats.filter((_, i) => i !== index)
+      );
+    }
+  };
+
+  // If not authenticated, show login form
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">
-                CoreTech Admin Login
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Enter admin password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Logging in..." : "Login"}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="container mx-auto px-4 py-16 flex justify-center items-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Admin Login</CardTitle>
+            <CardDescription>Enter your password to access the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-6">
+                <FormField
+                  control={loginForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Enter password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={loginForm.formState.isSubmitting}>
+                  {loginForm.formState.isSubmitting ? "Logging in..." : "Login"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
-      <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-center">CoreTech CMS Admin Panel</h1>
-        
-        <Tabs defaultValue="hero" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="hero">Hero Section</TabsTrigger>
-            <TabsTrigger value="about">About Section</TabsTrigger>
-            <TabsTrigger value="portfolio">Portfolio Items</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
-          
-          {/* Hero Section Tab */}
-          <TabsContent value="hero">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit Hero Section</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...heroForm}>
-                  <form onSubmit={heroForm.handleSubmit(updateHeroSection)} className="space-y-6">
-                    <FormField
-                      control={heroForm.control}
-                      name="heading"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Heading</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={heroForm.control}
-                      name="subheading"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Subheading</FormLabel>
-                          <FormControl>
-                            <Textarea rows={3} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* About Section Tab */}
-          <TabsContent value="about">
-            <Card>
-              <CardHeader>
-                <CardTitle>Edit About Section</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...aboutForm}>
-                  <form onSubmit={aboutForm.handleSubmit(updateAboutSection)} className="space-y-6">
-                    <FormField
-                      control={aboutForm.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={aboutForm.control}
-                      name="description1"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (Paragraph 1)</FormLabel>
-                          <FormControl>
-                            <Textarea rows={3} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={aboutForm.control}
-                      name="description2"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (Paragraph 2)</FormLabel>
-                          <FormControl>
-                            <Textarea rows={3} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {/* Stats fields would be dynamically added/removed in a real application */}
-                    <div className="border p-4 rounded-lg">
-                      <h3 className="font-semibold mb-4">Stats (First stat shown as example)</h3>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <FormField
-                          control={aboutForm.control}
-                          name={`stats.0.value`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Stat Value</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={aboutForm.control}
-                          name={`stats.0.label`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Stat Label</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Portfolio Items Tab */}
-          <TabsContent value="portfolio">
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Portfolio Item</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Form {...portfolioForm}>
-                  <form onSubmit={portfolioForm.handleSubmit(addPortfolioItem)} className="space-y-6">
-                    <FormField
-                      control={portfolioForm.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., luvr" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={portfolioForm.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Describe the project..." 
-                              rows={3} 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={portfolioForm.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Image URL</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="https://example.com/image.jpg" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {/* Tags would be dynamically added in a real application */}
-                    <FormField
-                      control={portfolioForm.control}
-                      name="tags"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tags (comma separated)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Web App, Mobile App, UI/UX" 
-                              value={field.value?.join(", ") || ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                field.onChange(
-                                  value.split(",").map((tag) => tag.trim()).filter(Boolean)
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={portfolioForm.control}
-                      name="projectUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project URL</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="https://example.com/project" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Adding..." : "Add Portfolio Item"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          {/* Settings Tab */}
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Admin Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsAuthenticated(false)}
-                  >
-                    Logout
+    <div className="container mx-auto px-4 py-12">
+      <h1 className="text-3xl font-bold mb-6">CoreTech CMS Admin</h1>
+      <p className="mb-6 text-gray-600 dark:text-gray-300">
+        Manage your website content from this admin panel.
+      </p>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="hero">Hero Section</TabsTrigger>
+          <TabsTrigger value="about">About Section</TabsTrigger>
+          <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+        </TabsList>
+
+        {/* Hero Section Tab */}
+        <TabsContent value="hero">
+          <Card>
+            <CardHeader>
+              <CardTitle>Edit Hero Section</CardTitle>
+              <CardDescription>Update the main hero section content</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...heroForm}>
+                <form onSubmit={heroForm.handleSubmit(updateHeroSection)} className="space-y-6">
+                  <FormField
+                    control={heroForm.control}
+                    name="heading"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Heading</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter heading" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={heroForm.control}
+                    name="subheading"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Subheading</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Enter subheading" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={heroForm.formState.isSubmitting}>
+                    {heroForm.formState.isSubmitting ? "Updating..." : "Update Hero Section"}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* About Section Tab */}
+        <TabsContent value="about">
+          <Card>
+            <CardHeader>
+              <CardTitle>Edit About Section</CardTitle>
+              <CardDescription>Update the about section content</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...aboutForm}>
+                <form onSubmit={aboutForm.handleSubmit(updateAboutSection)} className="space-y-6">
+                  <FormField
+                    control={aboutForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter title" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={aboutForm.control}
+                    name="description1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Description Paragraph</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Enter first description paragraph" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={aboutForm.control}
+                    name="description2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Second Description Paragraph</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Enter second description paragraph" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={aboutForm.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter image URL" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Stats</h3>
+                      <Button type="button" variant="outline" onClick={addStatField} size="sm">
+                        Add Stat
+                      </Button>
+                    </div>
+                    
+                    {aboutForm.watch("stats")?.map((_, index) => (
+                      <div key={index} className="flex gap-4 items-start">
+                        <FormField
+                          control={aboutForm.control}
+                          name={`stats.${index}.value`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Value</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. 200+" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={aboutForm.control}
+                          name={`stats.${index}.label`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Label</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Projects Completed" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {aboutForm.watch("stats").length > 1 && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="mt-8"
+                            onClick={() => removeStatField(index)}
+                          >
+                            X
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <Button type="submit" disabled={aboutForm.formState.isSubmitting}>
+                    {aboutForm.formState.isSubmitting ? "Updating..." : "Update About Section"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Portfolio Tab */}
+        <TabsContent value="portfolio">
+          <Card>
+            <CardHeader>
+              <CardTitle>Add Portfolio Item</CardTitle>
+              <CardDescription>Add a new portfolio project</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...portfolioForm}>
+                <form onSubmit={portfolioForm.handleSubmit(addPortfolioItem)} className="space-y-6">
+                  <FormField
+                    control={portfolioForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Project title" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={portfolioForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Project description" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={portfolioForm.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Project image URL" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={portfolioForm.control}
+                    name="tags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Web App, Mobile, UI/UX (comma separated)" {...field} />
+                        </FormControl>
+                        <FormDescription>Enter tags separated by commas</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={portfolioForm.control}
+                    name="projectUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Project URL" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={portfolioForm.formState.isSubmitting}>
+                    {portfolioForm.formState.isSubmitting ? "Adding..." : "Add Portfolio Item"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Other Tabs will be implemented later */}
+        <TabsContent value="services">
+          <Card>
+            <CardHeader>
+              <CardTitle>Services Management</CardTitle>
+              <CardDescription>Coming soon</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>The services management features will be implemented in the next update.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="team">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Management</CardTitle>
+              <CardDescription>Coming soon</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>The team management features will be implemented in the next update.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="testimonials">
+          <Card>
+            <CardHeader>
+              <CardTitle>Testimonials Management</CardTitle>
+              <CardDescription>Coming soon</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>The testimonials management features will be implemented in the next update.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default AdminPage;
+}

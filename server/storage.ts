@@ -143,9 +143,10 @@ export class MemStorage implements IStorage {
 
   async getAllSiteContent(): Promise<Record<string, any>> {
     const content: Record<string, any> = {};
-    for (const [key, value] of this.siteContent.entries()) {
+    // Convert Map to array of entries and then iterate
+    Array.from(this.siteContent.entries()).forEach(([key, value]) => {
       content[key] = value;
-    }
+    });
     return content;
   }
 }
