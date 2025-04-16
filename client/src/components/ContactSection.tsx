@@ -43,7 +43,10 @@ const ContactSection = () => {
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/contact", data);
+      await apiRequest("/api/contact", {
+        method: "POST",
+        body: JSON.stringify(data)
+      });
       toast({
         title: "Message Sent!",
         description: "We'll get back to you as soon as possible.",
@@ -77,9 +80,14 @@ const ContactSection = () => {
               <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
               
               <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
-                    <MapPin className="text-primary" />
+                <div className="flex items-start group">
+                  <div className="relative mr-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/70 to-primary rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                      <MapPin className="text-white h-6 w-6" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-900 rounded-full border-2 border-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    </div>
                   </div>
                   <div>
                     <h4 className="font-semibold">Our Location</h4>
@@ -87,9 +95,14 @@ const ContactSection = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
-                    <Mail className="text-primary" />
+                <div className="flex items-start group">
+                  <div className="relative mr-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500/70 to-indigo-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                      <Mail className="text-white h-6 w-6" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-900 rounded-full border-2 border-indigo-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                    </div>
                   </div>
                   <div>
                     <h4 className="font-semibold">Email Us</h4>
@@ -97,9 +110,14 @@ const ContactSection = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-primary bg-opacity-10 rounded-lg flex items-center justify-center mr-4">
-                    <Phone className="text-primary" />
+                <div className="flex items-start group">
+                  <div className="relative mr-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500/70 to-blue-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+                      <Phone className="text-white h-6 w-6" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-gray-900 rounded-full border-2 border-blue-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    </div>
                   </div>
                   <div>
                     <h4 className="font-semibold">Call Us</h4>
@@ -111,16 +129,16 @@ const ContactSection = () => {
               <div className="mt-8">
                 <h4 className="font-semibold mb-4">Follow Us</h4>
                 <div className="flex space-x-4">
-                  <a href="#" className="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
                     <Linkedin className="h-5 w-5" />
                   </a>
-                  <a href="#" className="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
                     <Twitter className="h-5 w-5" />
                   </a>
-                  <a href="#" className="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
                     <Facebook className="h-5 w-5" />
                   </a>
-                  <a href="#" className="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center transition-all hover:bg-primary hover:text-white">
+                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
                     <Instagram className="h-5 w-5" />
                   </a>
                 </div>
