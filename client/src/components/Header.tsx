@@ -16,7 +16,8 @@ const Header = () => {
   };
 
   const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    // Direct theme setting instead of toggling based on resolvedTheme
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   useEffect(() => {
@@ -50,18 +51,23 @@ const Header = () => {
             <a href="#portfolio" className="nav-link text-sm font-medium hover:text-primary transition-all">Portfolio</a>
             <a href="#team" className="nav-link text-sm font-medium hover:text-primary transition-all">Team</a>
             <a href="#contact" className="nav-link text-sm font-medium hover:text-primary transition-all">Contact</a>
-            <div 
-              onClick={toggleTheme} 
-              className="ml-4 flex items-center cursor-pointer border border-gray-200 dark:border-gray-700 rounded-full h-6 w-12 relative"
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme" 
+              className="ml-4 flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full h-8 w-16 relative transition-colors duration-300 shadow-sm hover:shadow"
             >
-              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${resolvedTheme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
-              <div className="absolute left-1">
-                <Sun className="h-3 w-3 text-white" />
+              <div className="absolute inset-0 w-full h-full flex items-center">
+                <div className="w-full px-1.5 flex justify-between items-center">
+                  <Sun className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-amber-500'}`} />
+                  <Moon className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-blue-400' : 'text-gray-400'}`} />
+                </div>
               </div>
-              <div className="absolute right-1">
-                <Moon className="h-3 w-3 text-white" />
-              </div>
-            </div>
+              <div 
+                className={`h-6 w-6 bg-white dark:bg-gray-700 rounded-full absolute transition-all duration-300 transform shadow-md ${
+                  theme === 'dark' ? 'translate-x-4 border-blue-400' : '-translate-x-4 border-amber-500'
+                } border-2`}
+              />
+            </button>
           </nav>
           
           {/* Mobile Menu Button */}
@@ -85,16 +91,23 @@ const Header = () => {
             onClick={toggleTheme}
             className="flex items-center mt-4 cursor-pointer"
           >
-            <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-full h-6 w-12 relative mr-3">
-              <div className={`h-5 w-5 bg-primary rounded-full absolute transition-all duration-300 transform ${resolvedTheme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`}></div>
-              <div className="absolute left-1">
-                <Sun className="h-3 w-3 text-white" />
+            <button
+              aria-label="Toggle theme" 
+              className="flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full h-8 w-16 relative transition-colors duration-300 shadow-sm hover:shadow mr-3"
+            >
+              <div className="absolute inset-0 w-full h-full flex items-center">
+                <div className="w-full px-1.5 flex justify-between items-center">
+                  <Sun className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-amber-500'}`} />
+                  <Moon className={`h-3.5 w-3.5 ${theme === 'dark' ? 'text-blue-400' : 'text-gray-400'}`} />
+                </div>
               </div>
-              <div className="absolute right-1">
-                <Moon className="h-3 w-3 text-white" />
-              </div>
-            </div>
-            <span className="text-sm">Toggle Theme</span>
+              <div 
+                className={`h-6 w-6 bg-white dark:bg-gray-700 rounded-full absolute transition-all duration-300 transform shadow-md ${
+                  theme === 'dark' ? 'translate-x-4 border-blue-400' : '-translate-x-4 border-amber-500'
+                } border-2`}
+              />
+            </button>
+            <span className="text-sm font-medium">Toggle Theme</span>
           </div>
         </nav>
       </div>

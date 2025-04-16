@@ -113,8 +113,26 @@ const PortfolioSection = () => {
                   {item.tags.map((tag, tagIndex) => (
                     <span 
                       key={tagIndex} 
-                      className="bg-primary bg-opacity-10 text-primary text-xs px-3 py-1 rounded-full"
+                      className="bg-gray-100 border border-primary/30 dark:bg-gray-800 dark:border-primary/50 text-primary font-medium text-xs px-3 py-1 rounded-full flex items-center gap-1"
                     >
+                      {tag === "Mobile App" && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+                      {tag === "UI/UX" && <span className="w-2 h-2 rounded-full bg-purple-500"></span>}
+                      {tag === "React Native" && <span className="w-2 h-2 rounded-full bg-cyan-500"></span>}
+                      {tag === "Web App" && <span className="w-2 h-2 rounded-full bg-green-500"></span>}
+                      {tag === "Mobile" && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+                      {tag === "Cloud Solution" && <span className="w-2 h-2 rounded-full bg-indigo-500"></span>}
+                      {tag === "Dashboard" && <span className="w-2 h-2 rounded-full bg-amber-500"></span>}
+                      {tag === "FinTech" && <span className="w-2 h-2 rounded-full bg-emerald-500"></span>}
+                      {tag === "Accounting" && <span className="w-2 h-2 rounded-full bg-yellow-500"></span>}
+                      {tag === "POS" && <span className="w-2 h-2 rounded-full bg-red-500"></span>}
+                      {tag === "Retail" && <span className="w-2 h-2 rounded-full bg-orange-500"></span>}
+                      {tag === "EdTech" && <span className="w-2 h-2 rounded-full bg-teal-500"></span>}
+                      {tag === "Assessment" && <span className="w-2 h-2 rounded-full bg-pink-500"></span>}
+                      {tag === "Cloud Platform" && <span className="w-2 h-2 rounded-full bg-violet-500"></span>}
+                      {!["Mobile App", "UI/UX", "React Native", "Web App", "Mobile", "Cloud Solution", 
+                        "Dashboard", "FinTech", "Accounting", "POS", "Retail", "EdTech", 
+                        "Assessment", "Cloud Platform"].includes(tag) && 
+                        <span className="w-2 h-2 rounded-full bg-gray-500"></span>}
                       {tag}
                     </span>
                   ))}

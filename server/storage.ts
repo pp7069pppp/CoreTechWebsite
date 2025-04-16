@@ -96,6 +96,134 @@ export class MemStorage implements IStorage {
         projectUrl: "#"
       }
     ]);
+
+    // Services
+    this.siteContent.set('services', [
+      {
+        id: 1,
+        icon: "code",
+        title: "Custom Software Development",
+        description: "Tailored software solutions designed to meet your specific business needs and objectives."
+      },
+      {
+        id: 2,
+        icon: "smartphone",
+        title: "Mobile App Development",
+        description: "Intuitive and high-performance mobile applications for iOS and Android platforms."
+      },
+      {
+        id: 3,
+        icon: "layout",
+        title: "Web Application Development",
+        description: "Responsive and scalable web applications with modern interfaces and robust backends."
+      },
+      {
+        id: 4,
+        icon: "database",
+        title: "Database Solutions",
+        description: "Optimized database design, development, and management for efficient data handling."
+      },
+      {
+        id: 5,
+        icon: "cloud",
+        title: "Cloud Computing Services",
+        description: "Strategic cloud migration and management to enhance scalability and reduce costs."
+      },
+      {
+        id: 6,
+        icon: "shield",
+        title: "Cybersecurity Solutions",
+        description: "Comprehensive security measures to protect your systems and data from threats."
+      }
+    ]);
+
+    // Team members
+    this.siteContent.set('team', [
+      {
+        id: 1,
+        name: "Alex Johnson",
+        role: "CEO & Founder",
+        bio: "With over 15 years of industry experience, Alex leads the strategic direction of CoreTech.",
+        imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        socialLinks: [
+          { type: "linkedin", url: "#" },
+          { type: "twitter", url: "#" },
+          { type: "github", url: "#" }
+        ]
+      },
+      {
+        id: 2,
+        name: "Sarah Chen",
+        role: "CTO",
+        bio: "Sarah oversees all technical aspects of the company, bringing innovation and technical excellence.",
+        imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        socialLinks: [
+          { type: "linkedin", url: "#" },
+          { type: "github", url: "#" }
+        ]
+      },
+      {
+        id: 3,
+        name: "Michael Rodriguez",
+        role: "Lead UX Designer",
+        bio: "Michael creates intuitive and engaging user experiences that drive product adoption and satisfaction.",
+        imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        socialLinks: [
+          { type: "linkedin", url: "#" },
+          { type: "dribbble", url: "#" },
+          { type: "twitter", url: "#" }
+        ]
+      },
+      {
+        id: 4,
+        name: "Priya Patel",
+        role: "Lead Developer",
+        bio: "Priya leads our development team, ensuring high code quality and efficient project delivery.",
+        imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        socialLinks: [
+          { type: "linkedin", url: "#" },
+          { type: "github", url: "#" }
+        ]
+      }
+    ]);
+
+    // Testimonials
+    this.siteContent.set('testimonials', [
+      {
+        id: 1,
+        content: "CoreTech transformed our business with their innovative software solutions. Their team's expertise and dedication made the entire process smooth and efficient.",
+        authorName: "Jennifer Smith",
+        authorRole: "CEO, GreenTech Solutions",
+        authorImageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 2,
+        content: "Working with CoreTech was a game-changer for our company. Their mobile app development service exceeded our expectations and helped us reach a wider audience.",
+        authorName: "David Lee",
+        authorRole: "Marketing Director, Vertex Inc",
+        authorImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        id: 3,
+        content: "The cloud migration service provided by CoreTech significantly improved our system performance and reduced operational costs. Highly recommended!",
+        authorName: "Sophia Wang",
+        authorRole: "CTO, DataStream Analytics",
+        authorImageUrl: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+      }
+    ]);
+
+    // Contact Info
+    this.siteContent.set('contact', {
+      address: "123 Innovation Drive, Tech Park, CA 94043",
+      email: "info@coretech.com",
+      phone: "+1 (555) 123-4567",
+      socialLinks: [
+        { type: "linkedin", url: "#" },
+        { type: "twitter", url: "#" },
+        { type: "facebook", url: "#" },
+        { type: "instagram", url: "#" }
+      ]
+    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
