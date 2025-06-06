@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"  # Backend port
+      - "3000:3000"  # Frontend port
+    environment:
+      - NODE_ENV=production
+    restart: always
+    volumes:
+      - .:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:5000"]
+      interval: 30s
