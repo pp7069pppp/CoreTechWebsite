@@ -1,59 +1,30 @@
 import { Linkedin, Twitter, Github, Dribbble } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 type TeamMember = {
+  id: number;
   name: string;
   role: string;
   bio: string;
-  image: string;
+  imageUrl: string;
   socialLinks: {
     type: 'linkedin' | 'twitter' | 'github' | 'dribbble';
     url: string;
   }[];
 };
 
+type ApiResponse = {
+  success: boolean;
+  data: TeamMember[];
+};
+
 const TeamSection = () => {
-  const team: TeamMember[] = [
-    {
-      name: "David Anderson",
-      role: "CEO & Founder",
-      bio: "20+ years of experience in technology leadership and innovation.",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      socialLinks: [
-        { type: "linkedin", url: "#" },
-        { type: "twitter", url: "#" }
-      ]
-    },
-    {
-      name: "Sarah Johnson",
-      role: "CTO",
-      bio: "Expert in emerging technologies and software architecture.",
-      image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      socialLinks: [
-        { type: "linkedin", url: "#" },
-        { type: "github", url: "#" }
-      ]
-    },
-    {
-      name: "Michael Lee",
-      role: "COO",
-      bio: "Specializes in operational excellence and business optimization.",
-      image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      socialLinks: [
-        { type: "linkedin", url: "#" },
-        { type: "twitter", url: "#" }
-      ]
-    },
-    {
-      name: "Jennifer Kim",
-      role: "VP of Product",
-      bio: "Expert in product strategy and user experience design.",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
-      socialLinks: [
-        { type: "linkedin", url: "#" },
-        { type: "dribbble", url: "#" }
-      ]
-    }
-  ];
+  const { data: teamData } = useQuery<ApiResponse>({
+    queryKey: ['/api/cms/content/team'],
+    refetchOnWindowFocus: false
+  });
+
+  const team = teamData?.data || [];
 
   const getSocialIcon = (type: string) => {
     switch (type) {
@@ -85,7 +56,7 @@ const TeamSection = () => {
           {team.map((member, index) => (
             <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
               <img 
-                src={member.image} 
+                src={member.imageUrl} 
                 alt={member.name} 
                 className="w-full h-64 object-cover object-center"
               />

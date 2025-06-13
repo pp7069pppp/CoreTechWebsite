@@ -1,35 +1,27 @@
 import { useState, useEffect } from "react";
 import { Quote } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 type Testimonial = {
+  id: number;
   content: string;
-  author: string;
-  role: string;
-  image: string;
+  authorName: string;
+  authorRole: string;
+  authorImageUrl: string;
+};
+
+type ApiResponse = {
+  success: boolean;
+  data: Testimonial[];
 };
 
 const TestimonialsSection = () => {
-  const testimonials: Testimonial[] = [
-    {
-      content: "CoreTech transformed our business operations with their innovative cloud solution. Their team's expertise and dedication to our success was exceptional.",
-      author: "Michael Johnson",
-      role: "CEO, TechVision Inc.",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
-    },
-    {
-      content: "The mobile app developed by CoreTech helped us increase customer engagement by 200%. Their approach to understanding our business needs was refreshing.",
-      author: "Sarah Williams",
-      role: "Marketing Director, Innovate LLC",
-      image: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
-    },
-    {
-      content: "Working with CoreTech on our cybersecurity infrastructure was a game-changer. They identified vulnerabilities we weren't aware of and implemented robust solutions.",
-      author: "Alex Thompson",
-      role: "CIO, SecureData Systems",
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
-    }
-  ];
+  const { data: testimonialsData } = useQuery<ApiResponse>({
+    queryKey: ['/api/cms/content/testimonials'],
+    refetchOnWindowFocus: false
+  });
 
+  const testimonials = testimonialsData?.data || [];
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -58,17 +50,17 @@ const TestimonialsSection = () => {
                   </div>
                 </div>
                 <p className="text-lg mb-6">
-                  {testimonials[currentSlide].content}
+                  {testimonials[currentSlide]?.content}
                 </p>
                 <div className="flex items-center">
                   <img 
-                    src={testimonials[currentSlide].image} 
+                    src={testimonials[currentSlide]?.authorImageUrl} 
                     alt="Client" 
                     className="w-12 h-12 rounded-full object-cover mr-4"
                   />
                   <div>
-                    <h4 className="font-bold">{testimonials[currentSlide].author}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{testimonials[currentSlide].role}</p>
+                    <h4 className="font-bold">{testimonials[currentSlide]?.authorName}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{testimonials[currentSlide]?.authorRole}</p>
                   </div>
                 </div>
               </div>

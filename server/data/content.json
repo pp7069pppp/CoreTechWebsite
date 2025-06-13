@@ -1,0 +1,253 @@
+{
+  "hero": {
+    "heading": "Innovative Solutions for Tomorrow's Challenges",
+    "subheading": "CoreTech delivers cutting-edge technology solutions that transform how businesses operate in the digital landscape."
+  },
+  "about": {
+    "title": "About CoreTech",
+    "description1": "Founded in 2010, CoreTech has been at the forefront of technology innovation, helping businesses navigate the complex digital landscape.",
+    "description2": "Our mission is to empower organizations through technology, providing solutions that drive efficiency, growth, and competitive advantage.",
+    "stats": [
+      {
+        "value": "200+",
+        "label": "Projects Completed"
+      },
+      {
+        "value": "98%",
+        "label": "Client Satisfaction"
+      },
+      {
+        "value": "50+",
+        "label": "Expert Team Members"
+      },
+      {
+        "value": "12+",
+        "label": "Years of Excellence"
+      }
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+  },
+  "portfolio": [
+    {
+      "id": 1,
+      "title": "luvr",
+      "description": "A modern dating application connecting like-minded individuals through advanced matching algorithms.",
+      "imageUrl": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "Mobile App",
+        "UI/UX",
+        "React Native"
+      ],
+      "projectUrl": "#"
+    },
+    {
+      "id": 2,
+      "title": "SplitBuddy",
+      "description": "Expense sharing application that makes it easy to split bills with friends and track shared expenses.",
+      "imageUrl": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "Web App",
+        "Mobile App",
+        "FinTech"
+      ],
+      "projectUrl": "#"
+    },
+    {
+      "id": 3,
+      "title": "ezHisab",
+      "description": "Comprehensive accounting solution for small businesses with inventory and financial management.",
+      "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "Web App",
+        "Accounting",
+        "Dashboard"
+      ],
+      "projectUrl": "#"
+    },
+    {
+      "id": 4,
+      "title": "ezPOS",
+      "description": "Point of sale system designed for retail businesses with inventory and sales tracking capabilities.",
+      "imageUrl": "https://images.unsplash.com/photo-1556742031-c6961e8560b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "POS",
+        "Retail",
+        "Cloud Solution"
+      ],
+      "projectUrl": "#"
+    },
+    {
+      "id": 5,
+      "title": "ezExam",
+      "description": "Online examination platform for educational institutions with automated grading and reporting features.",
+      "imageUrl": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "EdTech",
+        "Assessment",
+        "Cloud Platform"
+      ],
+      "projectUrl": "#"
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "icon": "code",
+      "title": "Custom Software Development",
+      "description": "Tailored solutions designed to address your specific business challenges and opportunities."
+    },
+    {
+      "id": 2,
+      "icon": "smartphone",
+      "title": "Mobile App Development",
+      "description": "Native and cross-platform mobile applications that engage users and drive business growth."
+    },
+    {
+      "id": 3,
+      "icon": "cloud",
+      "title": "Cloud Solutions",
+      "description": "Secure, scalable cloud infrastructure and migration services to optimize your operations."
+    },
+    {
+      "id": 4,
+      "icon": "lock",
+      "title": "Cybersecurity",
+      "description": "Comprehensive security solutions to protect your business from evolving digital threats."
+    },
+    {
+      "id": 5,
+      "icon": "line-chart",
+      "title": "Data Analytics",
+      "description": "Transform raw data into actionable insights that drive informed business decisions."
+    },
+    {
+      "id": 6,
+      "icon": "bot",
+      "title": "AI & Machine Learning",
+      "description": "Innovative AI solutions that automate processes and uncover new business opportunities."
+    }
+  ],
+  "team": [
+    {
+      "id": 1,
+      "name": "Priti Patel",
+      "role": "CEO & Founder",
+      "bio": "20+ years of experience in technology leadership and innovation.",
+      "imageUrl": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      "socialLinks": [
+        {
+          "type": "linkedin",
+          "url": "https://www.linkedin.com/"
+        },
+        {
+          "type": "twitter",
+          "url": "https://x.com/"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Manish Patel",
+      "role": "CTO",
+      "bio": "Expert in emerging technologies and software architecture.",
+      "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      "socialLinks": [
+        {
+          "type": "linkedin",
+          "url": "https://x.com/"
+        },
+        {
+          "type": "github",
+          "url": "https://www.linkedin.com/"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Michael Lee",
+      "role": "COO",
+      "bio": "Specializes in operational excellence and business optimization.",
+      "imageUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      "socialLinks": [
+        {
+          "type": "linkedin",
+          "url": "#"
+        },
+        {
+          "type": "twitter",
+          "url": "#"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Jennifer Kim",
+      "role": "VP of Product",
+      "bio": "Expert in product strategy and user experience design.",
+      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      "socialLinks": [
+        {
+          "type": "linkedin",
+          "url": "#"
+        },
+        {
+          "type": "dribbble",
+          "url": "#"
+        }
+      ]
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "content": "CoreTech transformed our business with their innovative software solutions. Their team's expertise and dedication made the entire process smooth and efficient.",
+      "authorName": "Jennifer Smith",
+      "authorRole": "CEO, GreenTech Solutions",
+      "authorImageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+    },
+    {
+      "id": 2,
+      "content": "CoreTech transformed our business operations with their innovative cloud solution. Their team's expertise and dedication to our success was exceptional.",
+      "authorName": "Michael Johnson",
+      "authorRole": "CEO, TechVision Inc.",
+      "authorImageUrl": "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      "id": 3,
+      "content": "The mobile app developed by CoreTech helped us increase customer engagement by 200%. Their approach to understanding our business needs was refreshing.",
+      "authorName": "Sarah Williams",
+      "authorRole": "Marketing Director, Innovate LLC",
+      "authorImageUrl": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      "id": 4,
+      "content": "Working with CoreTech on our cybersecurity infrastructure was a game-changer. They identified vulnerabilities we weren't aware of and implemented robust solutions.",
+      "authorName": "Alex Thompson",
+      "authorRole": "CIO, SecureData Systems",
+      "authorImageUrl": "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+    }
+  ],
+  "contact": {
+    "address": "123 Innovation Drive, Tech Park, CA 94043",
+    "email": "info@coretech.com",
+    "phone": "+1 (555) 123-4567",
+    "socialLinks": [
+      {
+        "type": "linkedin",
+        "url": "#"
+      },
+      {
+        "type": "twitter",
+        "url": "#"
+      },
+      {
+        "type": "facebook",
+        "url": "#"
+      },
+      {
+        "type": "instagram",
+        "url": "#"
+      }
+    ]
+  }
+}

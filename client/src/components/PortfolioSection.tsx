@@ -13,65 +13,17 @@ type PortfolioItem = {
 
 type ApiResponse = {
   success: boolean;
-  data: {
-    data: PortfolioItem[];
-  };
+  data: PortfolioItem[];
 };
 
 const PortfolioSection = () => {
-  const { data: portfolioData, isLoading, error } = useQuery<ApiResponse>({
+  const { data: portfolioData, isLoading } = useQuery<ApiResponse>({
     queryKey: ['/api/cms/content/portfolio'],
     refetchOnWindowFocus: false
   });
-
-  // Default portfolio items as fallback
-  const defaultPortfolioItems: PortfolioItem[] = [
-    {
-      id: 1,
-      title: "luvr",
-      description: "A modern dating application connecting like-minded individuals through advanced matching algorithms.",
-      imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      tags: ["Mobile App", "UI/UX", "React Native"],
-      projectUrl: "#"
-    },
-    {
-      id: 2,
-      title: "SplitBuddy",
-      description: "Expense sharing application that makes it easy to split bills with friends and track shared expenses.",
-      imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      tags: ["Web App", "Mobile App", "FinTech"],
-      projectUrl: "#"
-    },
-    {
-      id: 3,
-      title: "ezHisab",
-      description: "Comprehensive accounting solution for small businesses with inventory and financial management.",
-      imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      tags: ["Web App", "Accounting", "Dashboard"],
-      projectUrl: "#"
-    },
-    {
-      id: 4,
-      title: "ezPOS",
-      description: "Point of sale system designed for retail businesses with inventory and sales tracking capabilities.",
-      imageUrl: "https://images.unsplash.com/photo-1556742031-c6961e8560b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      tags: ["POS", "Retail", "Cloud Solution"],
-      projectUrl: "#"
-    },
-    {
-      id: 5,
-      title: "ezExam",
-      description: "Online examination platform for educational institutions with automated grading and reporting features.",
-      imageUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-      tags: ["EdTech", "Assessment", "Cloud Platform"],
-      projectUrl: "#"
-    }
-  ];
   
-  // Use portfolio data from API if available, otherwise use defaults
-  const portfolioItems = Array.isArray(portfolioData?.data?.data) 
-    ? portfolioData.data.data 
-    : defaultPortfolioItems;
+  // Use portfolio data from API
+  const portfolioItems = portfolioData?.data || [];
 
   return (
     <section id="portfolio" className="py-16 bg-gray-50 dark:bg-gray-900 transition-all">

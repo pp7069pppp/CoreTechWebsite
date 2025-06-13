@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { MapPin, Mail, Phone, Linkedin, Twitter, Facebook, Instagram } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -26,9 +27,31 @@ const contactFormSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
+type ContactInfo = {
+  address: string;
+  email: string;
+  phone: string;
+  socialLinks: {
+    type: string;
+    url: string;
+  }[];
+};
+
+type ApiResponse = {
+  success: boolean;
+  data: ContactInfo;
+};
+
 const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const { data: contactData } = useQuery<ApiResponse>({
+    queryKey: ['/api/cms/content/contact'],
+    refetchOnWindowFocus: false
+  });
+
+  const contactInfo = contactData?.data;
   
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -63,6 +86,21 @@ const ContactSection = () => {
     }
   };
 
+  const getSocialIcon = (type: string) => {
+    switch (type) {
+      case 'linkedin':
+        return <Linkedin className="h-5 w-5" />;
+      case 'twitter':
+        return <Twitter className="h-5 w-5" />;
+      case 'facebook':
+        return <Facebook className="h-5 w-5" />;
+      case 'instagram':
+        return <Instagram className="h-5 w-5" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <section id="contact" className="py-16 bg-gray-50 dark:bg-gray-900 transition-all">
       <div className="container mx-auto px-4 md:px-6">
@@ -91,7 +129,7 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">Our Location</h4>
-                    <p className="text-gray-600 dark:text-gray-300">123 Tech Street, San Francisco, CA 94107</p>
+                    <p className="text-gray-600 dark:text-gray-300">{contactInfo?.address}</p>
                   </div>
                 </div>
                 
@@ -106,7 +144,7 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">Email Us</h4>
-                    <a href="mailto:info@coretech.com" className="text-primary hover:underline">info@coretech.com</a>
+                    <a href={`mailto:${contactInfo?.email}`} className="text-primary hover:underline">{contactInfo?.email}</a>
                   </div>
                 </div>
                 
@@ -121,7 +159,7 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">Call Us</h4>
-                    <a href="tel:+14155550123" className="text-primary hover:underline">+1 (415) 555-0123</a>
+                    <a href={`tel:${contactInfo?.phone}`} className="text-primary hover:underline">{contactInfo?.phone}</a>
                   </div>
                 </div>
               </div>
@@ -129,18 +167,15 @@ const ContactSection = () => {
               <div className="mt-8">
                 <h4 className="font-semibold mb-4">Follow Us</h4>
                 <div className="flex space-x-4">
-                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
-                    <Linkedin className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white">
-                    <Instagram className="h-5 w-5" />
-                  </a>
+                  {contactInfo?.socialLinks.map((link, index) => (
+                    <a 
+                      key={index}
+                      href={link.url} 
+                      className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-md transition-all hover:shadow-lg hover:-translate-y-1 text-white"
+                    >
+                      {getSocialIcon(link.type)}
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>

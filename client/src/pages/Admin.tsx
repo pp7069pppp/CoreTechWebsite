@@ -40,14 +40,56 @@ const portfolioItemSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   description: z.string().min(20, { message: "Description must be at least 20 characters" }),
   imageUrl: z.string().url({ message: "Please enter a valid URL" }),
-  tags: z.string().transform(value => value.split(",").map(tag => tag.trim())),
+  tags: z.array(z.string()),
   projectUrl: z.string().url({ message: "Please enter a valid URL" }),
+});
+
+const serviceSchema = z.object({
+  icon: z.string(),
+  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
+  description: z.string().min(20, { message: "Description must be at least 20 characters" }),
+});
+
+const teamMemberSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
+  role: z.string().min(3, { message: "Role must be at least 3 characters" }),
+  bio: z.string().min(20, { message: "Bio must be at least 20 characters" }),
+  imageUrl: z.string().url({ message: "Please enter a valid URL" }),
+  socialLinks: z.array(
+    z.object({
+      type: z.string(),
+      url: z.string().url({ message: "Please enter a valid URL" }),
+    })
+  ),
+});
+
+const testimonialSchema = z.object({
+  content: z.string().min(20, { message: "Content must be at least 20 characters" }),
+  authorName: z.string().min(3, { message: "Author name must be at least 3 characters" }),
+  authorRole: z.string().min(3, { message: "Author role must be at least 3 characters" }),
+  authorImageUrl: z.string().url({ message: "Please enter a valid URL" }),
+});
+
+const contactSchema = z.object({
+  address: z.string().min(10, { message: "Address must be at least 10 characters" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
+  phone: z.string().min(10, { message: "Phone must be at least 10 characters" }),
+  socialLinks: z.array(
+    z.object({
+      type: z.string(),
+      url: z.string().url({ message: "Please enter a valid URL" }),
+    })
+  ),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type HeroFormValues = z.infer<typeof heroSchema>;
 type AboutFormValues = z.infer<typeof aboutSchema>;
 type PortfolioItemFormValues = z.infer<typeof portfolioItemSchema>;
+type ServiceFormValues = z.infer<typeof serviceSchema>;
+type TeamMemberFormValues = z.infer<typeof teamMemberSchema>;
+type TestimonialFormValues = z.infer<typeof testimonialSchema>;
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -55,24 +97,17 @@ export default function AdminPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Login form
+  // Form hooks
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      password: "",
-    },
+    defaultValues: { password: "" },
   });
 
-  // Hero section form
   const heroForm = useForm<HeroFormValues>({
     resolver: zodResolver(heroSchema),
-    defaultValues: {
-      heading: "",
-      subheading: "",
-    },
+    defaultValues: { heading: "", subheading: "" },
   });
 
-  // About section form
   const aboutForm = useForm<AboutFormValues>({
     resolver: zodResolver(aboutSchema),
     defaultValues: {
@@ -84,56 +119,107 @@ export default function AdminPage() {
     },
   });
 
-  // Portfolio item form
   const portfolioForm = useForm<PortfolioItemFormValues>({
     resolver: zodResolver(portfolioItemSchema),
     defaultValues: {
       title: "",
       description: "",
       imageUrl: "",
-      tags: "",
+      tags: [],
       projectUrl: "",
     },
   });
 
-  // Fetch hero content
-  const { data: heroData, isLoading: heroLoading } = useQuery<ApiResponse<HeroFormValues>>({
-    queryKey: ['/api/cms/content/hero'],
-    enabled: isAuthenticated && activeTab === "hero",
-    refetchOnWindowFocus: false
+  const serviceForm = useForm<ServiceFormValues>({
+    resolver: zodResolver(serviceSchema),
+    defaultValues: {
+      icon: "",
+      title: "",
+      description: "",
+    },
   });
 
-  // Apply hero data when received
-  React.useEffect(() => {
+  const teamMemberForm = useForm<TeamMemberFormValues>({
+    resolver: zodResolver(teamMemberSchema),
+    defaultValues: {
+      name: "",
+      role: "",
+      bio: "",
+      imageUrl: "",
+      socialLinks: [{ type: "", url: "" }],
+    },
+  });
+
+  const testimonialForm = useForm<TestimonialFormValues>({
+    resolver: zodResolver(testimonialSchema),
+    defaultValues: {
+      content: "",
+      authorName: "",
+      authorRole: "",
+      authorImageUrl: "",
+    },
+  });
+
+  const contactForm = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      address: "",
+      email: "",
+      phone: "",
+      socialLinks: [{ type: "", url: "" }],
+    },
+  });
+
+  // Fetch content for each section
+  const { data: heroData } = useQuery<ApiResponse<HeroFormValues>>({
+    queryKey: ['/api/cms/content/hero'],
+    enabled: isAuthenticated && activeTab === "hero",
+  });
+
+  const { data: aboutData } = useQuery<ApiResponse<AboutFormValues>>({
+    queryKey: ['/api/cms/content/about'],
+    enabled: isAuthenticated && activeTab === "about",
+  });
+
+  const { data: portfolioData } = useQuery<ApiResponse<PortfolioItemFormValues[]>>({
+    queryKey: ['/api/cms/content/portfolio'],
+    enabled: isAuthenticated && activeTab === "portfolio",
+  });
+
+  const { data: servicesData } = useQuery<ApiResponse<ServiceFormValues[]>>({
+    queryKey: ['/api/cms/content/services'],
+    enabled: isAuthenticated && activeTab === "services",
+  });
+
+  const { data: teamData } = useQuery<ApiResponse<TeamMemberFormValues[]>>({
+    queryKey: ['/api/cms/content/team'],
+    enabled: isAuthenticated && activeTab === "team",
+  });
+
+  const { data: testimonialsData } = useQuery<ApiResponse<TestimonialFormValues[]>>({
+    queryKey: ['/api/cms/content/testimonials'],
+    enabled: isAuthenticated && activeTab === "testimonials",
+  });
+
+  const { data: contactData } = useQuery<ApiResponse<ContactFormValues>>({
+    queryKey: ['/api/cms/content/contact'],
+    enabled: isAuthenticated && activeTab === "contact",
+  });
+
+  // Update form data when content is fetched
+  useEffect(() => {
     if (heroData?.success && heroData?.data) {
-      heroForm.reset({
-        heading: heroData.data.heading,
-        subheading: heroData.data.subheading,
-      });
+      heroForm.reset(heroData.data);
     }
   }, [heroData, heroForm]);
 
-  // Fetch about content
-  const { data: aboutData, isLoading: aboutLoading } = useQuery<ApiResponse<AboutFormValues>>({
-    queryKey: ['/api/cms/content/about'],
-    enabled: isAuthenticated && activeTab === "about",
-    refetchOnWindowFocus: false
-  });
-
-  // Apply about data when received
-  React.useEffect(() => {
+  useEffect(() => {
     if (aboutData?.success && aboutData?.data) {
-      aboutForm.reset({
-        title: aboutData.data.title,
-        description1: aboutData.data.description1,
-        description2: aboutData.data.description2,
-        imageUrl: aboutData.data.imageUrl,
-        stats: aboutData.data.stats,
-      });
+      aboutForm.reset(aboutData.data);
     }
   }, [aboutData, aboutForm]);
 
-  // Handle login submission
+  // Handle login
   const handleLogin = async (data: LoginFormValues) => {
     try {
       const response = await apiRequest('/api/cms/login', {
@@ -163,7 +249,7 @@ export default function AdminPage() {
     }
   };
 
-  // Update hero section
+  // Update content handlers
   const updateHeroSection = async (data: HeroFormValues) => {
     try {
       const response = await apiRequest('/api/cms/content/hero', {
@@ -193,7 +279,6 @@ export default function AdminPage() {
     }
   };
 
-  // Update about section
   const updateAboutSection = async (data: AboutFormValues) => {
     try {
       const response = await apiRequest('/api/cms/content/about', {
@@ -223,10 +308,12 @@ export default function AdminPage() {
     }
   };
 
-  // Add portfolio item
-  const addPortfolioItem = async (data: PortfolioItemFormValues) => {
+  // Add state to track editing mode
+  const [editingItem, setEditingItem] = useState<{ id: number; type: string } | null>(null);
+
+  // Update portfolio form submission
+  const handlePortfolioSubmit = async (data: PortfolioItemFormValues) => {
     try {
-      // First get existing portfolio items
       const portfolioResponse = await apiRequest('/api/cms/content/portfolio', {
         method: 'GET',
       });
@@ -236,50 +323,201 @@ export default function AdminPage() {
         portfolioItems = portfolioResponse.data;
       }
       
-      // Add new item with incremental ID
-      const newItem = {
-        id: portfolioItems.length > 0 ? Math.max(...portfolioItems.map(item => item.id)) + 1 : 1,
-        ...data,
-      };
+      let updatedItems;
+      if (editingItem?.type === 'portfolio') {
+        // Update existing item
+        updatedItems = portfolioItems.map((item: any) => 
+          item.id === editingItem.id ? { ...item, ...data } : item
+        );
+      } else {
+        // Add new item
+        const newItem = {
+          id: portfolioItems.length > 0 ? Math.max(...portfolioItems.map((item: any) => item.id)) + 1 : 1,
+          ...data,
+        };
+        updatedItems = [...portfolioItems, newItem];
+      }
       
-      const allItems = [...portfolioItems, newItem];
-      
-      // Update portfolio items
       const response = await apiRequest('/api/cms/content/portfolio', {
         method: 'POST',
-        body: JSON.stringify(allItems),
+        body: JSON.stringify(updatedItems),
       });
 
       if (response.success) {
         toast({
           title: "Success",
-          description: "Portfolio item added successfully",
+          description: editingItem ? "Portfolio item updated successfully" : "Portfolio item added successfully",
         });
         portfolioForm.reset();
+        setEditingItem(null);
         queryClient.invalidateQueries({ queryKey: ['/api/cms/content/portfolio'] });
-      } else {
-        toast({
-          title: "Error",
-          description: response.message || "Failed to add portfolio item",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to add portfolio item. Please try again.",
+        description: editingItem ? "Failed to update portfolio item" : "Failed to add portfolio item",
         variant: "destructive",
       });
     }
   };
 
-  // Add more stats fields to about form
+  // Update service form submission
+  const handleServiceSubmit = async (data: ServiceFormValues) => {
+    try {
+      const servicesResponse = await apiRequest('/api/cms/content/services', {
+        method: 'GET',
+      });
+      
+      let services = [];
+      if (servicesResponse.success && servicesResponse.data) {
+        services = servicesResponse.data;
+      }
+      
+      let updatedServices;
+      if (editingItem?.type === 'service') {
+        // Update existing service
+        updatedServices = services.map((service: any) => 
+          service.id === editingItem.id ? { ...service, ...data } : service
+        );
+      } else {
+        // Add new service
+        const newService = {
+          id: services.length > 0 ? Math.max(...services.map((s: any) => s.id)) + 1 : 1,
+          ...data,
+        };
+        updatedServices = [...services, newService];
+      }
+      
+      const response = await apiRequest('/api/cms/content/services', {
+        method: 'POST',
+        body: JSON.stringify(updatedServices),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: editingItem ? "Service updated successfully" : "Service added successfully",
+        });
+        serviceForm.reset();
+        setEditingItem(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/services'] });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: editingItem ? "Failed to update service" : "Failed to add service",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Update team member form submission
+  const handleTeamMemberSubmit = async (data: TeamMemberFormValues) => {
+    try {
+      const teamResponse = await apiRequest('/api/cms/content/team', {
+        method: 'GET',
+      });
+      
+      let teamMembers = [];
+      if (teamResponse.success && teamResponse.data) {
+        teamMembers = teamResponse.data;
+      }
+      
+      let updatedMembers;
+      if (editingItem?.type === 'team') {
+        // Update existing member
+        updatedMembers = teamMembers.map((member: any) => 
+          member.id === editingItem.id ? { ...member, ...data } : member
+        );
+      } else {
+        // Add new member
+        const newMember = {
+          id: teamMembers.length > 0 ? Math.max(...teamMembers.map((m: any) => m.id)) + 1 : 1,
+          ...data,
+        };
+        updatedMembers = [...teamMembers, newMember];
+      }
+      
+      const response = await apiRequest('/api/cms/content/team', {
+        method: 'POST',
+        body: JSON.stringify(updatedMembers),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: editingItem ? "Team member updated successfully" : "Team member added successfully",
+        });
+        teamMemberForm.reset();
+        setEditingItem(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/team'] });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: editingItem ? "Failed to update team member" : "Failed to add team member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Update testimonial form submission
+  const handleTestimonialSubmit = async (data: TestimonialFormValues) => {
+    try {
+      const testimonialsResponse = await apiRequest('/api/cms/content/testimonials', {
+        method: 'GET',
+      });
+      
+      let testimonials = [];
+      if (testimonialsResponse.success && testimonialsResponse.data) {
+        testimonials = testimonialsResponse.data;
+      }
+      
+      let updatedTestimonials;
+      if (editingItem?.type === 'testimonial') {
+        // Update existing testimonial
+        updatedTestimonials = testimonials.map((testimonial: any) => 
+          testimonial.id === editingItem.id ? { ...testimonial, ...data } : testimonial
+        );
+      } else {
+        // Add new testimonial
+        const newTestimonial = {
+          id: testimonials.length > 0 ? Math.max(...testimonials.map((t: any) => t.id)) + 1 : 1,
+          ...data,
+        };
+        updatedTestimonials = [...testimonials, newTestimonial];
+      }
+      
+      const response = await apiRequest('/api/cms/content/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(updatedTestimonials),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: editingItem ? "Testimonial updated successfully" : "Testimonial added successfully",
+        });
+        testimonialForm.reset();
+        setEditingItem(null);
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content/testimonials'] });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: editingItem ? "Failed to update testimonial" : "Failed to add testimonial",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add more stats fields
   const addStatField = () => {
     const currentStats = aboutForm.getValues("stats") || [];
     aboutForm.setValue("stats", [...currentStats, { value: "", label: "" }]);
   };
 
-  // Remove stat field from about form
+  // Remove stat field
   const removeStatField = (index: number) => {
     const currentStats = aboutForm.getValues("stats") || [];
     if (currentStats.length > 1) {
@@ -288,6 +526,15 @@ export default function AdminPage() {
         currentStats.filter((_, i) => i !== index)
       );
     }
+  };
+
+  // Add a function to handle cancel
+  const handleCancel = () => {
+    setEditingItem(null);
+    portfolioForm.reset();
+    serviceForm.reset();
+    teamMemberForm.reset();
+    testimonialForm.reset();
   };
 
   // If not authenticated, show login form
@@ -341,6 +588,7 @@ export default function AdminPage() {
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
 
         {/* Hero Section Tab */}
@@ -513,122 +761,808 @@ export default function AdminPage() {
 
         {/* Portfolio Tab */}
         <TabsContent value="portfolio">
+          <div className="space-y-6">
+            {/* Existing Portfolio Items */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Existing Portfolio Items</CardTitle>
+                <CardDescription>Manage your portfolio projects</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {portfolioData?.data?.map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{item.title}</h3>
+                        <p className="text-sm text-gray-500">{item.description}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            portfolioForm.reset(item);
+                            setEditingItem({ id: item.id, type: 'portfolio' });
+                            setActiveTab("portfolio");
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const updatedItems = portfolioData.data.filter((i: any) => i.id !== item.id);
+                              const response = await apiRequest('/api/cms/content/portfolio', {
+                                method: 'POST',
+                                body: JSON.stringify(updatedItems),
+                              });
+
+                              if (response.success) {
+                                toast({
+                                  title: "Success",
+                                  description: "Portfolio item deleted successfully",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/cms/content/portfolio'] });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to delete portfolio item",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Add/Edit Portfolio Item */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingItem?.type === 'portfolio' ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</CardTitle>
+                <CardDescription>
+                  {editingItem?.type === 'portfolio' ? 'Edit existing portfolio project' : 'Add a new portfolio project'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...portfolioForm}>
+                  <form onSubmit={portfolioForm.handleSubmit(handlePortfolioSubmit)} className="space-y-6">
+                    <FormField
+                      control={portfolioForm.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Project title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={portfolioForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Project description" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={portfolioForm.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Project image URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={portfolioForm.control}
+                      name="tags"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tags</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Web App, Mobile, UI/UX (comma separated)" 
+                              onChange={(e) => {
+                                const tags = e.target.value.split(',').map(tag => tag.trim());
+                                field.onChange(tags);
+                              }}
+                              value={field.value.join(', ')}
+                            />
+                          </FormControl>
+                          <FormDescription>Enter tags separated by commas</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={portfolioForm.control}
+                      name="projectUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Project URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={portfolioForm.formState.isSubmitting}>
+                        {portfolioForm.formState.isSubmitting 
+                          ? (editingItem?.type === 'portfolio' ? "Updating..." : "Adding...") 
+                          : (editingItem?.type === 'portfolio' ? "Update Portfolio Item" : "Add Portfolio Item")}
+                      </Button>
+                      {editingItem?.type === 'portfolio' && (
+                        <Button type="button" variant="outline" onClick={handleCancel}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Services Tab */}
+        <TabsContent value="services">
+          <div className="space-y-6">
+            {/* Existing Services */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Existing Services</CardTitle>
+                <CardDescription>Manage your services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {servicesData?.data?.map((service: any) => (
+                    <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{service.title}</h3>
+                        <p className="text-sm text-gray-500">{service.description}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            serviceForm.reset(service);
+                            setEditingItem({ id: service.id, type: 'service' });
+                            setActiveTab("services");
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const updatedServices = servicesData.data.filter((s: any) => s.id !== service.id);
+                              const response = await apiRequest('/api/cms/content/services', {
+                                method: 'POST',
+                                body: JSON.stringify(updatedServices),
+                              });
+
+                              if (response.success) {
+                                toast({
+                                  title: "Success",
+                                  description: "Service deleted successfully",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/cms/content/services'] });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to delete service",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Add/Edit Service */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingItem?.type === 'service' ? 'Edit Service' : 'Add Service'}</CardTitle>
+                <CardDescription>
+                  {editingItem?.type === 'service' ? 'Edit existing service' : 'Add a new service'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...serviceForm}>
+                  <form onSubmit={serviceForm.handleSubmit(handleServiceSubmit)} className="space-y-6">
+                    <FormField
+                      control={serviceForm.control}
+                      name="icon"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Icon</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Icon name (e.g., code, smartphone)" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={serviceForm.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Service title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={serviceForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Service description" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={serviceForm.formState.isSubmitting}>
+                        {serviceForm.formState.isSubmitting 
+                          ? (editingItem?.type === 'service' ? "Updating..." : "Adding...") 
+                          : (editingItem?.type === 'service' ? "Update Service" : "Add Service")}
+                      </Button>
+                      {editingItem?.type === 'service' && (
+                        <Button type="button" variant="outline" onClick={handleCancel}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Team Tab */}
+        <TabsContent value="team">
+          <div className="space-y-6">
+            {/* Existing Team Members */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Existing Team Members</CardTitle>
+                <CardDescription>Manage your team members</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {teamData?.data?.map((member: any) => (
+                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-medium">{member.name}</h3>
+                        <p className="text-sm text-gray-500">{member.role}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            teamMemberForm.reset(member);
+                            setEditingItem({ id: member.id, type: 'team' });
+                            setActiveTab("team");
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const updatedMembers = teamData.data.filter((m: any) => m.id !== member.id);
+                              const response = await apiRequest('/api/cms/content/team', {
+                                method: 'POST',
+                                body: JSON.stringify(updatedMembers),
+                              });
+
+                              if (response.success) {
+                                toast({
+                                  title: "Success",
+                                  description: "Team member deleted successfully",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/cms/content/team'] });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to delete team member",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Add/Edit Team Member */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingItem?.type === 'team' ? 'Edit Team Member' : 'Add Team Member'}</CardTitle>
+                <CardDescription>
+                  {editingItem?.type === 'team' ? 'Edit existing team member' : 'Add a new team member'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...teamMemberForm}>
+                  <form onSubmit={teamMemberForm.handleSubmit(handleTeamMemberSubmit)} className="space-y-6">
+                    <FormField
+                      control={teamMemberForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Team member name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={teamMemberForm.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Role</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Team member role" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={teamMemberForm.control}
+                      name="bio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Bio</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Team member bio" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={teamMemberForm.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Team member image URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-medium">Social Links</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentLinks = teamMemberForm.getValues("socialLinks") || [];
+                            teamMemberForm.setValue("socialLinks", [...currentLinks, { type: "", url: "" }]);
+                          }}
+                        >
+                          Add Social Link
+                        </Button>
+                      </div>
+                      {teamMemberForm.watch("socialLinks")?.map((_, index) => (
+                        <div key={index} className="flex gap-4 items-start">
+                          <FormField
+                            control={teamMemberForm.control}
+                            name={`socialLinks.${index}.type`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>Platform</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g., LinkedIn, Twitter" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={teamMemberForm.control}
+                            name={`socialLinks.${index}.url`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel>URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Social media profile URL" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {teamMemberForm.watch("socialLinks").length > 1 && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="mt-8"
+                              onClick={() => {
+                                const currentLinks = teamMemberForm.getValues("socialLinks");
+                                teamMemberForm.setValue(
+                                  "socialLinks",
+                                  currentLinks.filter((_, i) => i !== index)
+                                );
+                              }}
+                            >
+                              X
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={teamMemberForm.formState.isSubmitting}>
+                        {teamMemberForm.formState.isSubmitting 
+                          ? (editingItem?.type === 'team' ? "Updating..." : "Adding...") 
+                          : (editingItem?.type === 'team' ? "Update Team Member" : "Add Team Member")}
+                      </Button>
+                      {editingItem?.type === 'team' && (
+                        <Button type="button" variant="outline" onClick={handleCancel}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Testimonials Tab */}
+        <TabsContent value="testimonials">
+          <div className="space-y-6">
+            {/* Existing Testimonials */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Existing Testimonials</CardTitle>
+                <CardDescription>Manage your testimonials</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {testimonialsData?.data?.map((testimonial: any) => (
+                    <div key={testimonial.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="text-sm text-gray-500">{testimonial.content}</p>
+                        <p className="font-medium mt-2">{testimonial.authorName}</p>
+                        <p className="text-sm text-gray-500">{testimonial.authorRole}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            testimonialForm.reset(testimonial);
+                            setEditingItem({ id: testimonial.id, type: 'testimonial' });
+                            setActiveTab("testimonials");
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const updatedTestimonials = testimonialsData.data.filter((t: any) => t.id !== testimonial.id);
+                              const response = await apiRequest('/api/cms/content/testimonials', {
+                                method: 'POST',
+                                body: JSON.stringify(updatedTestimonials),
+                              });
+
+                              if (response.success) {
+                                toast({
+                                  title: "Success",
+                                  description: "Testimonial deleted successfully",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ['/api/cms/content/testimonials'] });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to delete testimonial",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Add/Edit Testimonial */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingItem?.type === 'testimonial' ? 'Edit Testimonial' : 'Add Testimonial'}</CardTitle>
+                <CardDescription>
+                  {editingItem?.type === 'testimonial' ? 'Edit existing testimonial' : 'Add a new testimonial'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...testimonialForm}>
+                  <form onSubmit={testimonialForm.handleSubmit(handleTestimonialSubmit)} className="space-y-6">
+                    <FormField
+                      control={testimonialForm.control}
+                      name="content"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Content</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Testimonial content" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={testimonialForm.control}
+                      name="authorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Author Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Author's name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={testimonialForm.control}
+                      name="authorRole"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Author Role</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Author's role/company" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={testimonialForm.control}
+                      name="authorImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Author Image URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Author's image URL" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={testimonialForm.formState.isSubmitting}>
+                        {testimonialForm.formState.isSubmitting 
+                          ? (editingItem?.type === 'testimonial' ? "Updating..." : "Adding...") 
+                          : (editingItem?.type === 'testimonial' ? "Update Testimonial" : "Add Testimonial")}
+                      </Button>
+                      {editingItem?.type === 'testimonial' && (
+                        <Button type="button" variant="outline" onClick={handleCancel}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Contact Tab */}
+        <TabsContent value="contact">
           <Card>
             <CardHeader>
-              <CardTitle>Add Portfolio Item</CardTitle>
-              <CardDescription>Add a new portfolio project</CardDescription>
+              <CardTitle>Edit Contact Information</CardTitle>
+              <CardDescription>Update contact information</CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...portfolioForm}>
-                <form onSubmit={portfolioForm.handleSubmit(addPortfolioItem)} className="space-y-6">
+              <Form {...contactForm}>
+                <form onSubmit={contactForm.handleSubmit(async (data) => {
+                  try {
+                    const response = await apiRequest('/api/cms/content/contact', {
+                      method: 'POST',
+                      body: JSON.stringify(data),
+                    });
+
+                    if (response.success) {
+                      toast({
+                        title: "Success",
+                        description: "Contact information updated successfully",
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['/api/cms/content/contact'] });
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: response.message || "Failed to update contact information",
+                        variant: "destructive",
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to update contact information. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                })} className="space-y-6">
                   <FormField
-                    control={portfolioForm.control}
-                    name="title"
+                    control={contactForm.control}
+                    name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Title</FormLabel>
+                        <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="Project title" {...field} />
+                          <Input placeholder="Company address" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
-                    control={portfolioForm.control}
-                    name="description"
+                    control={contactForm.control}
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Project description" {...field} />
+                          <Input placeholder="Contact email" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
-                    control={portfolioForm.control}
-                    name="imageUrl"
+                    control={contactForm.control}
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
+                        <FormLabel>Phone</FormLabel>
                         <FormControl>
-                          <Input placeholder="Project image URL" {...field} />
+                          <Input placeholder="Contact phone number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={portfolioForm.control}
-                    name="tags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tags</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Web App, Mobile, UI/UX (comma separated)" {...field} />
-                        </FormControl>
-                        <FormDescription>Enter tags separated by commas</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={portfolioForm.control}
-                    name="projectUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Project URL" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" disabled={portfolioForm.formState.isSubmitting}>
-                    {portfolioForm.formState.isSubmitting ? "Adding..." : "Add Portfolio Item"}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-medium">Social Links</h3>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const currentLinks = contactForm.getValues("socialLinks") || [];
+                          contactForm.setValue("socialLinks", [...currentLinks, { type: "", url: "" }]);
+                        }}
+                      >
+                        Add Social Link
+                      </Button>
+                    </div>
+                    {contactForm.watch("socialLinks")?.map((_, index) => (
+                      <div key={index} className="flex gap-4 items-start">
+                        <FormField
+                          control={contactForm.control}
+                          name={`socialLinks.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>Platform</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., LinkedIn, Twitter" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={contactForm.control}
+                          name={`socialLinks.${index}.url`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>URL</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Social media profile URL" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {contactForm.watch("socialLinks").length > 1 && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="mt-8"
+                            onClick={() => {
+                              const currentLinks = contactForm.getValues("socialLinks");
+                              contactForm.setValue(
+                                "socialLinks",
+                                currentLinks.filter((_, i) => i !== index)
+                              );
+                            }}
+                          >
+                            X
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Button type="submit" disabled={contactForm.formState.isSubmitting}>
+                    {contactForm.formState.isSubmitting ? "Updating..." : "Update Contact Information"}
                   </Button>
                 </form>
               </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Other Tabs will be implemented later */}
-        <TabsContent value="services">
-          <Card>
-            <CardHeader>
-              <CardTitle>Services Management</CardTitle>
-              <CardDescription>Coming soon</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>The services management features will be implemented in the next update.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="team">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Management</CardTitle>
-              <CardDescription>Coming soon</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>The team management features will be implemented in the next update.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="testimonials">
-          <Card>
-            <CardHeader>
-              <CardTitle>Testimonials Management</CardTitle>
-              <CardDescription>Coming soon</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>The testimonials management features will be implemented in the next update.</p>
             </CardContent>
           </Card>
         </TabsContent>

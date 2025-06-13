@@ -5,7 +5,7 @@ services:
     build: .
     ports:
       - "5000:5000"  # Backend port
-      - "3000:3000"  # Frontend port
+#      - "3000:3000"  # Frontend port
     environment:
       - NODE_ENV=production
     restart: always

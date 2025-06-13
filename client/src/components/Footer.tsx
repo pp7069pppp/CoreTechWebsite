@@ -1,7 +1,45 @@
 import { Facebook, Twitter, Linkedin, Instagram, MapPin, Phone, Mail } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+type ContactInfo = {
+  address: string;
+  email: string;
+  phone: string;
+  socialLinks: {
+    type: string;
+    url: string;
+  }[];
+};
+
+type ApiResponse = {
+  success: boolean;
+  data: ContactInfo;
+};
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  
+  const { data: contactData } = useQuery<ApiResponse>({
+    queryKey: ['/api/cms/content/contact'],
+    refetchOnWindowFocus: false
+  });
+
+  const contactInfo = contactData?.data;
+
+  const getSocialIcon = (type: string) => {
+    switch (type) {
+      case 'linkedin':
+        return <Linkedin className="h-5 w-5" />;
+      case 'twitter':
+        return <Twitter className="h-5 w-5" />;
+      case 'facebook':
+        return <Facebook className="h-5 w-5" />;
+      case 'instagram':
+        return <Instagram className="h-5 w-5" />;
+      default:
+        return null;
+    }
+  };
   
   return (
     <footer className="bg-white dark:bg-black border-t border-gray-100 dark:border-gray-800 transition-all">
@@ -15,18 +53,15 @@ const Footer = () => {
               Innovative technology solutions for businesses of all sizes.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">
-                <Instagram className="h-5 w-5" />
-              </a>
+              {contactInfo?.socialLinks.map((link, index) => (
+                <a 
+                  key={index}
+                  href={link.url} 
+                  className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all"
+                >
+                  {getSocialIcon(link.type)}
+                </a>
+              ))}
             </div>
           </div>
           
@@ -58,15 +93,15 @@ const Footer = () => {
             <ul className="space-y-4">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-3 mt-1 text-primary" />
-                <span className="text-gray-600 dark:text-gray-300">123 Tech Street, San Francisco, CA 94107</span>
+                <span className="text-gray-600 dark:text-gray-300">{contactInfo?.address}</span>
               </li>
               <li className="flex items-start">
                 <Mail className="h-5 w-5 mr-3 mt-1 text-primary" />
-                <a href="mailto:info@coretech.com" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">info@coretech.com</a>
+                <a href={`mailto:${contactInfo?.email}`} className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">{contactInfo?.email}</a>
               </li>
               <li className="flex items-start">
                 <Phone className="h-5 w-5 mr-3 mt-1 text-primary" />
-                <a href="tel:+14155550123" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">+1 (415) 555-0123</a>
+                <a href={`tel:${contactInfo?.phone}`} className="text-gray-600 dark:text-gray-300 hover:text-primary transition-all">{contactInfo?.phone}</a>
               </li>
             </ul>
           </div>
