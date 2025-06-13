@@ -228,25 +228,25 @@
     }
   ],
   "contact": {
-    "address": "123 Innovation Drive, Tech Park, CA 94043",
+    "address": "16 Plymouth Rd, Braintree, MA 02184",
     "email": "info@coretech.com",
-    "phone": "+1 (555) 123-4567",
+    "phone": "+1 (978) 978-9789",
     "socialLinks": [
       {
         "type": "linkedin",
-        "url": "#"
+        "url": "https://www.linkedin.com/"
       },
       {
         "type": "twitter",
-        "url": "#"
+        "url": "https://x.com/"
       },
       {
         "type": "facebook",
-        "url": "#"
+        "url": "https://www.facebook.com/"
       },
       {
         "type": "instagram",
-        "url": "#"
+        "url": "https://www.instagram.com/"
       }
     ]
   }

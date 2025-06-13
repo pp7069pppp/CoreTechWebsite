@@ -47,11 +47,11 @@ const ContactSection = () => {
   const { toast } = useToast();
   
   const { data: contactData } = useQuery<ApiResponse>({
-    queryKey: ['/api/cms/content/contact'],
+    queryKey: ['/api/cms/content'],
     refetchOnWindowFocus: false
   });
 
-  const contactInfo = contactData?.data;
+  const contactInfo = contactData?.data?.contact;
   
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),

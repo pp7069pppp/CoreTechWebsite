@@ -12,6 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Label } from "@/components/ui/label";
 
 // Form Schemas
 const loginSchema = z.object({
@@ -71,13 +72,13 @@ const testimonialSchema = z.object({
 });
 
 const contactSchema = z.object({
-  address: z.string().min(10, { message: "Address must be at least 10 characters" }),
-  email: z.string().email({ message: "Please enter a valid email" }),
-  phone: z.string().min(10, { message: "Phone must be at least 10 characters" }),
+  address: z.string().min(1, "Address is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
   socialLinks: z.array(
     z.object({
       type: z.string(),
-      url: z.string().url({ message: "Please enter a valid URL" }),
+      url: z.string().url("Invalid URL"),
     })
   ),
 });
@@ -160,13 +161,18 @@ export default function AdminPage() {
     },
   });
 
-  const contactForm = useForm<ContactFormValues>({
+  const contactForm = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       address: "",
       email: "",
       phone: "",
-      socialLinks: [{ type: "", url: "" }],
+      socialLinks: [
+        { type: "linkedin", url: "" },
+        { type: "twitter", url: "" },
+        { type: "facebook", url: "" },
+        { type: "instagram", url: "" },
+      ],
     },
   });
 
@@ -218,6 +224,18 @@ export default function AdminPage() {
       aboutForm.reset(aboutData.data);
     }
   }, [aboutData, aboutForm]);
+
+  // Load contact data
+  useEffect(() => {
+    if (contactData?.success && contactData?.data) {
+      contactForm.reset({
+        address: contactData.data.address,
+        email: contactData.data.email,
+        phone: contactData.data.phone,
+        socialLinks: contactData.data.socialLinks,
+      });
+    }
+  }, [contactData, contactForm]);
 
   // Handle login
   const handleLogin = async (data: LoginFormValues) => {
@@ -535,6 +553,32 @@ export default function AdminPage() {
     serviceForm.reset();
     teamMemberForm.reset();
     testimonialForm.reset();
+  };
+
+  const handleContactSubmit = async (values: z.infer<typeof contactSchema>) => {
+    try {
+      const response = await apiRequest('/api/cms/content/contact', {
+        method: 'POST',
+        body: JSON.stringify(values),
+      });
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Contact information updated successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/cms/content'] });
+      } else {
+        throw new Error(response.message || "Failed to update contact information");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update contact information",
+        variant: "destructive",
+      });
+      console.error("Error updating contact:", error);
+    }
   };
 
   // If not authenticated, show login form
@@ -1423,146 +1467,80 @@ export default function AdminPage() {
         <TabsContent value="contact">
           <Card>
             <CardHeader>
-              <CardTitle>Edit Contact Information</CardTitle>
-              <CardDescription>Update contact information</CardDescription>
+              <CardTitle>Contact Information</CardTitle>
+              <CardDescription>
+                Update your company's contact information and social media links.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Form {...contactForm}>
-                <form onSubmit={contactForm.handleSubmit(async (data) => {
-                  try {
-                    const response = await apiRequest('/api/cms/content/contact', {
-                      method: 'POST',
-                      body: JSON.stringify(data),
-                    });
-
-                    if (response.success) {
-                      toast({
-                        title: "Success",
-                        description: "Contact information updated successfully",
-                      });
-                      queryClient.invalidateQueries({ queryKey: ['/api/cms/content/contact'] });
-                    } else {
-                      toast({
-                        title: "Error",
-                        description: response.message || "Failed to update contact information",
-                        variant: "destructive",
-                      });
-                    }
-                  } catch (error) {
-                    toast({
-                      title: "Error",
-                      description: "Failed to update contact information. Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                })} className="space-y-6">
-                  <FormField
-                    control={contactForm.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Company address" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+              <form onSubmit={contactForm.handleSubmit(handleContactSubmit)} className="space-y-4">
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      {...contactForm.register("address")}
+                      placeholder="Enter your company address"
+                    />
+                    {contactForm.formState.errors.address && (
+                      <p className="text-sm text-red-500">
+                        {contactForm.formState.errors.address.message}
+                      </p>
                     )}
-                  />
-                  <FormField
-                    control={contactForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Contact email" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      {...contactForm.register("email")}
+                      placeholder="Enter your company email"
+                    />
+                    {contactForm.formState.errors.email && (
+                      <p className="text-sm text-red-500">
+                        {contactForm.formState.errors.email.message}
+                      </p>
                     )}
-                  />
-                  <FormField
-                    control={contactForm.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Contact phone number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      {...contactForm.register("phone")}
+                      placeholder="Enter your company phone number"
+                    />
+                    {contactForm.formState.errors.phone && (
+                      <p className="text-sm text-red-500">
+                        {contactForm.formState.errors.phone.message}
+                      </p>
                     )}
-                  />
+                  </div>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-medium">Social Links</h3>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const currentLinks = contactForm.getValues("socialLinks") || [];
-                          contactForm.setValue("socialLinks", [...currentLinks, { type: "", url: "" }]);
-                        }}
-                      >
-                        Add Social Link
-                      </Button>
-                    </div>
-                    {contactForm.watch("socialLinks")?.map((_, index) => (
-                      <div key={index} className="flex gap-4 items-start">
-                        <FormField
-                          control={contactForm.control}
-                          name={`socialLinks.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>Platform</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g., LinkedIn, Twitter" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                    <Label>Social Media Links</Label>
+                    {contactForm.getValues("socialLinks").map((_, index) => (
+                      <div key={index} className="grid gap-2">
+                        <Label htmlFor={`social-${index}`}>
+                          {contactForm.getValues("socialLinks")[index].type.charAt(0).toUpperCase() +
+                            contactForm.getValues("socialLinks")[index].type.slice(1)}
+                        </Label>
+                        <Input
+                          id={`social-${index}`}
+                          {...contactForm.register(`socialLinks.${index}.url`)}
+                          placeholder={`Enter ${contactForm.getValues("socialLinks")[index].type} URL`}
                         />
-                        <FormField
-                          control={contactForm.control}
-                          name={`socialLinks.${index}.url`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormLabel>URL</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Social media profile URL" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {contactForm.watch("socialLinks").length > 1 && (
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="mt-8"
-                            onClick={() => {
-                              const currentLinks = contactForm.getValues("socialLinks");
-                              contactForm.setValue(
-                                "socialLinks",
-                                currentLinks.filter((_, i) => i !== index)
-                              );
-                            }}
-                          >
-                            X
-                          </Button>
+                        {contactForm.formState.errors.socialLinks?.[index]?.url && (
+                          <p className="text-sm text-red-500">
+                            {contactForm.formState.errors.socialLinks[index]?.url?.message}
+                          </p>
                         )}
                       </div>
                     ))}
                   </div>
-                  <Button type="submit" disabled={contactForm.formState.isSubmitting}>
-                    {contactForm.formState.isSubmitting ? "Updating..." : "Update Contact Information"}
-                  </Button>
-                </form>
-              </Form>
+                </div>
+                <Button type="submit" className="w-full">
+                  Update Contact Information
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

@@ -20,11 +20,11 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   const { data: contactData } = useQuery<ApiResponse>({
-    queryKey: ['/api/cms/content/contact'],
+    queryKey: ['/api/cms/content'],
     refetchOnWindowFocus: false
   });
 
-  const contactInfo = contactData?.data;
+  const contactInfo = contactData?.data?.contact;
 
   const getSocialIcon = (type: string) => {
     switch (type) {
