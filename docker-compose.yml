@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   app:
@@ -10,7 +10,9 @@ services:
       - NODE_ENV=production
     restart: always
     volumes:
-      - .:/app
+      - ./server:/app/server
+      - ./client:/app/client
+      - ./shared:/app/shared
       - /app/node_modules
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:5000"]
